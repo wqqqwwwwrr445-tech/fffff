@@ -1,265 +1,73 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Мои Ассоциации</title>
-  <style>
-    :root {
-      --bg: #f4f6fb;
-      --card: #ffffff;
-      --primary: #5b5ce6;
-      --primary-dark: #4344c7;
-      --text: #1e202c;
-      --muted: #7a809a;
-      --accent: #ff6b6b;
-      --radius: 20px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 40px; -webkit-tap-highlight-color: transparent; }
-    
-    header {
-      background: var(--card);
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    header h1 { font-size: 20px; font-weight: 800; color: var(--primary); }
-    .btn {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-secondary { background: #e8eaf6; color: var(--primary); }
-    .btn-magic { background: linear-gradient(135deg, #6e8efb, #a777e3); width: 100%; margin: 10px 0; }
-    .btn-danger { background: #ffe5e5; color: #d63031; padding: 8px 12px; font-size: 13px; }
-
-    .container { padding: 20px; max-width: 540px; margin: 0 auto; }
-    .screen { display: none; }
-    .screen.active { display: block; animation: fadeIn 0.25s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-    .section-title { font-size: 18px; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-
-    /* Папки */
-    .folders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
-    .folder-card {
-      background: var(--card);
-      padding: 18px;
-      border-radius: var(--radius);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-      cursor: pointer;
-      position: relative;
-      border: 2px solid transparent;
-    }
-    .folder-card:active { border-color: var(--primary); }
-    .folder-icon { font-size: 32px; margin-bottom: 8px; }
-    .folder-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; word-break: break-word; }
-    .folder-count { font-size: 13px; color: var(--muted); }
-
-    /* Форма создания */
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
-    input, select {
-      width: 100%;
-      padding: 13px 15px;
-      border-radius: 14px;
-      border: 1.5px solid #dce0ec;
-      font-size: 16px;
-      background: #fff;
-      outline: none;
-    }
-    input:focus { border-color: var(--primary); }
-
-    .preview-images { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-    .preview-images img { width: 100%; height: 80px; object-fit: cover; border-radius: 12px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-
-    /* Внутри папки */
-    .mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-    .mode-btn { padding: 14px; border-radius: 16px; border: none; font-weight: 700; font-size: 15px; background: #e8eaf6; color: var(--muted); cursor: pointer; }
-    .mode-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(91,92,230,0.3); }
-
-    /* Карточка с ассоциациями */
-    .flashcard {
-      width: 100%;
-      height: 400px;
-      border-radius: 26px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-      background: #2c3e50;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-      transition: transform 0.3s;
-    }
-    .bg-collage {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 2px;
-      z-index: 1;
-    }
-    .bg-collage img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.25) contrast(1.05); }
-    .bg-collage img:first-child:nth-last-child(1) { grid-column: span 2; grid-row: span 2; }
-    .bg-collage img:first-child:nth-last-child(3) { grid-column: span 2; }
-
-    .card-overlay-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
-    .lang-badge {
-      background: rgba(0, 0, 0, 0.72);
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-    .main-word-box {
-      background: rgba(255, 255, 255, 0.94);
-      padding: 18px 28px;
-      border-radius: 22px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-      text-align: center;
-      max-width: 90%;
-    }
-    .main-word-box h2 { font-size: 28px; font-weight: 800; color: #111; }
-    .assoc-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-    .assoc-tag {
-      background: rgba(20, 20, 30, 0.82);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    /* Аудио режим */
-    .audio-box {
-      background: var(--card);
-      border-radius: 26px;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-    }
-    .audio-img { width: 100%; height: 210px; object-fit: cover; border-radius: 18px; margin-bottom: 16px; }
-    .audio-ru { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
-    .audio-en { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 18px; }
-    .pulse { animation: pulseAnim 1s infinite; }
-    @keyframes pulseAnim { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }
-
-    .nav-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 12px; }
-    .nav-controls button { flex: 1; }
-    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Моё обучение</title>
+<style>
+:root{--bg:#18191d;--card:#23252b;--inp:#2c2f37;--acc:#89c4f4;--soft:rgba(137,196,244,.15);--txt:#f3f4f6;--mut:#9ca3af;--dark:#111317;--ok:#4ade80;--err:#f87171}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
+body{background:var(--bg);color:var(--txt);padding-bottom:85px;-webkit-tap-highlight-color:transparent}
+.top{display:flex;gap:10px;padding:14px 18px;position:sticky;top:0;background:var(--bg);z-index:20}
+.srch{flex:1;background:var(--card);border-radius:14px;padding:10px 14px;display:flex;gap:8px;align-items:center}
+.srch input{background:0;border:0;color:var(--txt);width:100%;outline:0;font-size:14px}
+.ava{width:40px;height:40px;border-radius:50%;background:var(--acc);color:var(--dark);font-weight:800;border:0;font-size:16px}
+.box{padding:0 18px;max-width:520px;margin:0 auto}
+.scr{display:none}.scr.act{display:block}
+h1{font-size:23px;font-weight:800;margin-bottom:4px}.sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+.hero{background:linear-gradient(135deg,#89c4f4,#5ea8e6);color:var(--dark);border-radius:22px;padding:20px;position:relative;margin-bottom:18px}
+.hero h2{font-size:19px;font-weight:800;margin-bottom:5px;max-width:75%}.hero p{font-size:13px;opacity:.85;margin-bottom:14px;max-width:75%}
+.hbtn{background:var(--bg);color:var(--acc);border:0;padding:10px 18px;border-radius:12px;font-weight:700;font-size:14px}
+.hico{position:absolute;right:16px;bottom:14px;font-size:48px}
+.goal{background:var(--card);border-radius:18px;padding:15px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bar-bg{height:8px;background:var(--inp);border-radius:8px;margin-top:8px;overflow:hidden}.bar-fg{height:100%;background:var(--acc);width:10%;transition:.3s}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.head h3{font-size:16px;font-weight:700}
+.lnk{background:0;border:0;color:var(--acc);font-size:13px;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.fcard{background:var(--card);padding:15px;border-radius:18px;border:1px solid rgba(255,255,255,.04)}
+.fbadge{width:36px;height:36px;border-radius:10px;background:var(--soft);color:var(--acc);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:8px}
+.fcard h4{font-size:15px;margin-bottom:2px}.fcard p{font-size:12px;color:var(--mut)}
+.ttile{background:var(--card);padding:13px;border-radius:15px;display:flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.04)}
+.ttile h5{font-size:13px}.ttile p{font-size:11px;color:var(--mut)}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 18px}
+.pcard{background:var(--card);border:2px solid rgba(137,196,244,.2);border-radius:18px;padding:14px 10px;text-align:center}
+.pcard.act{background:var(--soft);border-color:var(--acc)}
+.pcard h4{font-size:14px;color:var(--acc);margin:4px 0}.pcard p{font-size:11px;color:var(--mut)}
+.fbox{width:100%;height:350px;border-radius:22px;position:relative;overflow:hidden;background:#2c303a;padding:16px;margin-bottom:12px}
+.collage{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px}
+.collage img{width:100%;height:100%;object-fit:cover;filter:saturate(1.25)}
+.collage img:first-child:nth-last-child(1){grid-column:span 2;grid-row:span 2}
+.collage img:first-child:nth-last-child(3){grid-column:span 2}
+.fover{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;align-items:center}
+.pill{background:rgba(24,25,29,.85);color:var(--acc);padding:5px 12px;border-radius:16px;font-size:11px;font-weight:700}
+.wplate{background:rgba(24,25,29,.92);border:1.5px solid rgba(137,196,244,.4);padding:16px 24px;border-radius:18px;text-align:center}
+.wplate h2{font-size:26px}.tags{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.tag{background:rgba(24,25,29,.88);padding:4px 10px;border-radius:10px;font-size:12px;font-weight:600}
+.acard,.gcard{background:var(--card);border-radius:22px;padding:18px;text-align:center;margin-bottom:12px}
+.acard img,.gimg{width:100%;height:190px;object-fit:cover;border-radius:14px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sbtn{flex:1;background:var(--card);color:var(--txt);border:1px solid rgba(255,255,255,.08);padding:12px;border-radius:12px;font-weight:700}
+.card{background:var(--card);padding:16px;border-radius:18px;margin-bottom:14px}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:5px;font-weight:600}
+input[type=text],select{width:100%;background:var(--inp);border:1.5px solid transparent;padding:12px;border-radius:12px;color:var(--txt);font-size:15px;margin-bottom:12px;outline:0}
+input:focus{border-color:var(--acc)}
+.pbtn{width:100%;background:var(--acc);color:var(--dark);border:0;padding:13px;border-radius:13px;font-weight:800;font-size:15px}
+.mbtn{width:100%;background:var(--soft);color:var(--acc);border:1px dashed var(--acc);padding:11px;border-radius:13px;font-weight:700;font-size:13px;margin-bottom:12px}
+.prev{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}.prev img{width:100%;height:65px;object-fit:cover;border-radius:8px}
+.opt{width:100%;background:var(--inp);color:var(--txt);border:1.5px solid rgba(255,255,255,.06);padding:13px;border-radius:12px;font-size:15px;font-weight:600;margin-top:8px;text-align:left}
+.opt.ok{background:rgba(74,222,128,.2);border-color:var(--ok);color:var(--ok)}.opt.err{background:rgba(248,113,113,.2);border-color:var(--err);color:var(--err)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.pcol{display:flex;flex-direction:column;gap:8px}
+.pitem{background:var(--inp);color:var(--txt);border:1.5px solid rgba(255,255,255,.06);padding:12px 8px;border-radius:12px;font-size:14px;font-weight:700}
+.pitem.sel{border-color:var(--acc);background:var(--soft);color:var(--acc)}.pitem.done{opacity:.25;pointer-events:none}
+.fb{margin-top:10px;font-weight:700;font-size:14px;min-height:20px}
+.sbox{background:var(--card);padding:14px;border-radius:16px}.sval{font-size:22px;font-weight:800;color:var(--acc);margin:4px 0 2px}.slbl{font-size:12px;color:var(--mut)}
+.bars{display:flex;align-items:flex-end;justify-content:space-between;height:110px;padding-top:14px;gap:8px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bar{width:100%;max-width:22px;background:var(--acc);border-radius:6px 6px 2px 2px}.bcol span{font-size:11px;color:var(--mut)}
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-around;padding:9px 4px 12px;z-index:30}
+.nbtn{background:0;border:0;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600}.nbtn.act{color:var(--acc)}
+</style>
 </head>
-<body>
 
-<header>
-  <h1 onclick="showScreen('home')">🧠 Мои Ассоциации</h1>
-  <button class="btn" onclick="openCreate()">+ Карточка</button>
-</header>
-
-<div class="container">
-  <!-- ГЛАВНЫЙ ЭКРАН -->
-  <div id="screen-home" class="screen active">
-    <div class="section-title">
-      <span>Мои папки</span>
-    </div>
-    <div id="folders-list" class="folders-grid"></div>
-
-    <div class="section-title">
-      <span>Тренажёры (скоро добавим)</span>
-    </div>
-    <div style="background:#fff; padding:16px; border-radius:18px; color:var(--muted); font-size:14px; line-height:1.5;">
-      Создайте папку и добавьте туда первые слова. В следующем шаге мы подключим сюда все 6 игр: угадывание по ассоциациям, пары, контекст и тесты!
-    </div>
-  </div>
-
-  <!-- СОЗДАНИЕ КАРТОЧКИ -->
-  <div id="screen-create" class="screen">
-    <div class="section-title">
-      <span>Новая карточка</span>
-      <button class="btn btn-secondary" onclick="showScreen('home')">Назад</button>
-    </div>
-
-    <div class="form-group">
-      <label>Папка (выберите или введите новую)</label>
-      <input type="text" id="inp-folder" list="folders-datalist" placeholder="Например: Еда или Путешествия">
-      <datalist id="folders-datalist"></datalist>
-    </div>
-
-    <div class="form-group">
-      <label>Слово на русском</label>
-      <input type="text" id="inp-ru" placeholder="Например: Яблоко">
-    </div>
-
-    <div class="form-group">
-      <label>Перевод на английском</label>
-      <input type="text" id="inp-en" placeholder="Например: Apple">
-    </div>
-
-    <button class="btn btn-magic" id="btn-auto" onclick="autoGenerate()">✨ Подобрать ассоциации и яркие фото</button>
-
-    <div class="form-group">
-      <label>Слова-ассоциации на русском (через запятую)</label>
-      <input type="text" id="inp-assoc" placeholder="Сок, пирог, дерево, красный">
-    </div>
-
-    <div class="form-group">
-      <label>Яркие картинки (подберутся сами или загрузите свои)</label>
-      <input type="file" id="inp-files" accept="image/*" multiple onchange="handleFiles(event)">
-      <div id="preview-box" class="preview-images"></div>
-    </div>
-
-    <button class="btn" style="width:100%; margin-top:10px; padding:15px;" onclick="saveCard()">Сохранить карточку</button>
-  </div>
-
-  <!-- ВНУТРИ ПАПКИ -->
-  <div id="screen-folder" class="screen">
-    <div class="section-title">
-      <span id="current-folder-title">Папка</span>
-      <button class="btn btn-secondary" onclick="stopAudio(); showScreen('home')">К папкам</button>
-    </div>
-
-    <div class="mode-switch">
-      <button class="mode-btn active" id="tab-assoc" onclick="switchMode('assoc')">🖼 Ассоциации</button>
-      <button class="mode-btn" id="tab-audio" onclick="switchMode('audio')">🔊 Аудио-повтор</button>
-    </div>
-
-    <!-- РЕЖИМ 1: КАРТОЧКА АССОЦИАЦИЙ -->
-    <div id="mode-assoc">
-      <div class="flashcard" onclick="flipCard()">
-        <div class="bg-collage" id="card-images"></div>
-        <div class="card-overlay-content">
-          <div class="lang-badge" id="card-side-label">РУССКИЙ (нажми, чтобы перевернуть)</div>
-          <div class="main-word-box">
-            <h2 id="card-word">Слово</h2>
-          </div>
-          <div class="assoc-tags" id="card-tags"></div>
-        </div>
-      </div>
-    </div>
 
 
