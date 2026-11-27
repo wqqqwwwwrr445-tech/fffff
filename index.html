@@ -146,14 +146,81 @@ function tab(id){document.querySelectorAll('.scr').forEach(x=>x.classList.remove
 function renderFolders(q=''){const m=new Map();cards.forEach(c=>{if(!q||c.folder.toLowerCase().includes(q.toLowerCase()))m.set(c.folder,(m.get(c.folder)||0)+1);});const ks=Array.from(m.keys()),ic=new Array('🇬🇧','🌿','🧪','✈️','📚','💡');document.getElementById('flist').innerHTML=ks.length?ks.map((k,i)=>`<div class="fcard" onclick="openFld('${k.replace(/'/g,"\\'")}')"><div class="fbadge">${ic.at(i%ic.length)}</div><h4>${k}</h4><p>${m.get(k)} слов(а)</p></div>`).join(''):'<p style="color:var(--mut);font-size:13px;grid-column:span 2">Нет папок</p>';}
 function openCreate(pf=''){tmpImg=new Array();new Array('c-ru','c-en','c-asc').forEach(i=>document.getElementById(i).value='');document.getElementById('c-fld').value=pf;document.getElementById('c-prev').innerHTML='';document.getElementById('dl-fld').innerHTML=Array.from(new Set(cards.map(x=>x.folder))).map(f=>`<option value="${f}">`).join('');tab('create');}
 function addFiles(e){Array.from(e.target.files).slice(0,4).forEach(f=>{const r=new FileReader();r.onload=ev=>{tmpImg.push(ev.target.result);document.getElementById('c-prev').innerHTML=tmpImg.map(s=>`<img src="${s}">`).join('');};r.readAsDataURL(f);});}
-function autoMagic(){const en=document.getElementById('c-en').value.trim().toLowerCase().replace(/^to\s+/,''),ru=document.getElementById('c-ru').value.trim().toLowerCase();if(!en)return alert('Сначала напишите слово на английском!');const dict={apple:'красный, сок, пирог, сад',house:'крыша, окно, семья, уют',home:'очаг, комната, дверь, тепло',cat:'усы, молоко, лапки, сон',dog:'друг, кость, лай, поводок',car:'руль, дорога, скорость, колесо',book:'страницы, чтение, знания, обложка',time:'часы, минута, песок, стрелки',travel:'самолёт, чемодан, море, билет',water:'океан, капля, река, жажда',sun:'лето, свет, тепло, утро',food:'обед, вкус, тарелка, кухня',work:'офис, дело, задача, успех',love:'сердце, чувства, нежность, пара',money:'кошелёк, банк, монеты, доход',coffee:'утро, чашка, аромат, бодрость',tea:'листья, чайник, тепло, лимон',forest:'деревья, тропа, природа, листва',city:'улицы, дома, транспорт, огни',school:'урок, тетрадь, учитель, класс',music:'мелодия, наушники, ритм, песня',phone:'звонок, экран, сообщение, связь',friend:'встреча, доверие, улыбка, помощь'};const emo={красный:'🍎',сок:'🧃',пирог:'🥧',сад:'🌳',крыша:'🏠',окно:'🪟',семья:'👨‍👩‍👧',уют:'🛋️',очаг:'🔥',комната:'🛏️',дверь:'🚪',тепло:'☀️',усы:'🐱',молоко:'🥛',лапки:'🐾',сон:'💤',друг:'🐶',кость:'🦴',лай:'🔊',поводок:'🦮',руль:'🚗',дорога:'🛣️',скорость:'⚡',колесо:'🛞',страницы:'📄',чтение:'📖',знания:'🧠',обложка:'📕',часы:'⏰',минута:'⏱️',песок:'⏳',стрелки:'🧭',самолёт:'✈️',чемодан:'🧳',море:'🌊',билет:'🎫',океан:'🌊',капля:'💧',река:'🏞️',жажда:'🥤',лето:'🏖️',свет:'💡',утро:'🌅',обед:'🍲',вкус:'😋',тарелка:'🍽️',кухня:'🍳',офис:'🏢',дело:'💼',задача:'✅',успех:'🏆',сердце:'❤️',чувства:'💕',нежность:'🌸',пара:'💑',кошелёк:'👛',банк:'🏦',монеты:'🪙',доход:'📈',чашка:'☕',аромат:'♨️',бодрость:'⚡',листья:'🍃',чайник:'🫖',лимон:'🍋',деревья:'🌲',тропа:'🥾',природа:'🌿',листва:'🍂',улицы:'🏙️',дома:'🏘️',транспорт:'🚌',огни:'✨',урок:'📚',тетрадь:'📓',учитель:'👩‍🏫',класс:'🏫',мелодия:'🎵',наушники:'🎧',ритм:'🥁',песня:'🎤',звонок:'📞',экран:'📱',сообщение:'💬',связь:'📶',встреча:'🤝',доверие:'💛',улыбка:'😊',помощь:'🙌'};const fall=new Array('🎯','🔑','💡','📌','🧩','🔮','🌈','⚡','🎁','🧭');const defAsc=ru.endsWith('ть')?'действие, движение, процесс, результат':'признак, деталь, место, польза';const asc=Reflect.get(dict,en)||defAsc;document.getElementById('c-asc').value=asc;const cols=new Array('#2563eb','#059669','#d97706','#db2777'),ws=asc.split(',').map(s=>s.trim()).filter(s=>s&&s.toLowerCase()!==ru&&s.toLowerCase()!==en);while(ws.length<4)ws.push('подсказка');tmpImg=ws.slice(0,4).map((w,i)=>{const ic=Reflect.get(emo,w.toLowerCase())||fall.at((w.charCodeAt(0)+i)%fall.length);return `BOX|${cols.at(i)}|${ic}|${w}`;});document.getElementById('c-prev').innerHTML=tmpImg.map(s=>`<div style="background:${s.split('|').at(1)};border-radius:8px;height:65px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700"><span style="font-size:20px">${s.split('|').at(2)}</span>${s.split('|').at(3)}</div>`).join('');}
+function autoMagic(){
+  const en=document.getElementById('c-en').value.trim().toLowerCase().replace(/^to\s+/,'');
+  const ru=document.getElementById('c-ru').value.trim().toLowerCase();
+  if(!en)return alert('Сначала напишите слово на английском!');
 
+  const dict={
+    apple:'красный, сок, пирог, сад',house:'крыша, окно, семья, уют',home:'очаг, комната, дверь, тепло',
+    cat:'усы, молоко, лапки, сон',dog:'друг, кость, лай, поводок',car:'руль, дорога, скорость, колесо',
+    book:'страницы, чтение, знания, обложка',time:'часы, минута, песок, стрелки',travel:'самолёт, чемодан, море, билет',
+    water:'океан, капля, река, жажда',sun:'лето, свет, тепло, утро',food:'обед, вкус, тарелка, кухня',
+    work:'офис, дело, задача, успех',love:'сердце, чувства, нежность, пара',money:'кошелёк, банк, монеты, доход',
+    coffee:'утро, чашка, аромат, бодрость',tea:'листья, чайник, тепло, лимон',forest:'деревья, тропа, природа, листва',
+    city:'улицы, дома, транспорт, огни',school:'урок, тетрадь, учитель, класс',music:'мелодия, наушники, ритм, песня',
+    phone:'звонок, экран, сообщение, связь',friend:'встреча, доверие, улыбка, помощь',
+    go:'шаги, дорога, путь, движение',walk:'прогулка, парк, шаги, тротуар',run:'бег, скорость, кроссовки, финиш',
+    eat:'еда, тарелка, вилка, обед',drink:'вода, стакан, жажда, глоток',sleep:'сон, кровать, подушка, ночь',
+    see:'глаза, взгляд, картина, свет',look:'взгляд, зеркало, поиск, внимание',read:'книга, текст, страницы, чтение',
+    write:'ручка, тетрадь, письмо, текст',speak:'речь, голос, диалог, слова',listen:'уши, музыка, звук, наушники',
+    buy:'магазин, покупка, пакет, чек',give:'подарок, руки, помощь, добро',take:'рука, выбор, вещь, взять',
+    come:'вход, гость, встреча, шаг',make:'мастер, дело, создание, руки',think:'мысли, мозг, идея, решение',
+    know:'знания, память, ум, ответ',learn:'учёба, урок, книга, опыт',play:'игра, мяч, веселье, команда',
+    swim:'бассейн, море, вода, волна',fly:'самолёт, небо, крылья, облака',drive:'машина, руль, трасса, водитель',
+    open:'дверь, ключ, коробка, вход',close:'замок, дверь, конец, тишина',smile:'улыбка, радость, смех, счастье',
+    rain:'дождь, зонт, тучи, лужи',snow:'зима, снежинка, холод, сугроб',night:'луна, звёзды, темнота, сон',
+    day:'солнце, утро, свет, дела',tree:'лес, листья, ветки, корни',flower:'лепестки, букет, весна, аромат'
+  };
 
+  const emo={
+    красный:'🍎',сок:'🧃',пирог:'🥧',сад:'🌳',крыша:'🏠',окно:'🪟',семья:'👨‍👩‍👧',уют:'🛋️',
+    очаг:'🔥',комната:'🛏️',дверь:'🚪',тепло:'☀️',усы:'🐱',молоко:'🥛',лапки:'🐾',сон:'💤',
+    друг:'🐶',кость:'🦴',лай:'🔊',поводок:'🦮',руль:'🚗',дорога:'🛣️',скорость:'⚡',колесо:'🛞',
+    страницы:'📄',чтение:'📖',знания:'🧠',обложка:'📕',часы:'⏰',минута:'⏱️',песок:'⏳',стрелки:'🧭',
+    самолёт:'✈️',чемодан:'🧳',море:'🌊',билет:'🎫',океан:'🌊',капля:'💧',река:'🏞️',жажда:'🥤',
+    лето:'🏖️',свет:'💡',утро:'🌅',обед:'🍲',вкус:'😋',тарелка:'🍽️',кухня:'🍳',офис:'🏢',
+    дело:'💼',задача:'✅',успех:'🏆',сердце:'❤️',чувства:'💕',нежность:'🌸',пара:'💑',кошелёк:'👛',
+    банк:'🏦',монеты:'🪙',доход:'📈',чашка:'☕',аромат:'♨️',бодрость:'⚡',листья:'🍃',чайник:'🫖',
+    лимон:'🍋',деревья:'🌲',тропа:'🥾',природа:'🌿',листва:'🍂',улицы:'🏙️',дома:'🏘️',транспорт:'🚌',
+    огни:'✨',урок:'📚',тетрадь:'📓',учитель:'👩‍🏫',класс:'🏫',мелодия:'🎵',наушники:'🎧',ритм:'🥁',
+    песня:'🎤',звонок:'📞',экран:'📱',сообщение:'💬',связь:'📶',встреча:'🤝',доверие:'💛',улыбка:'😊',
+    помощь:'🙌',шаги:'👣',путь:'🧭',движение:'➡️',прогулка:'🚶',парк:'🌳',тротуар:'🛤️',бег:'🏃',
+    кроссовки:'👟',финиш:'🏁',еда:'🍲',вилка:'🍴',вода:'💧',стакан:'🥛',глоток:'🥤',кровать:'🛏️',
+    подушка:'🛌',ночь:'🌙',глаза:'👀',взгляд:'👁️',картина:'🖼️',зеркало:'🪞',поиск:'🔍',внимание:'❗',
+    текст:'📝',ручка:'🖊️',письмо:'✉️',речь:'🗣️',голос:'🎙️',диалог:'💬',слова:'💭',уши:'👂',
+    звук:'🔊',магазин:'🏪',покупка:'🛍️',пакет:'🛍️',чек:'🧾',подарок:'🎁',руки:'🤲',добро:'💖',
+    рука:'✋',выбор:'☑️',вещь:'📦',взять:'✊',вход:'🚪',гость:'🙋',шаг:'👣',мастер:'🛠️',
+    создание:'✨',мысли:'💭',мозг:'🧠',идея:'💡',решение:'🎯',память:'🗂️',ум:'🎓',ответ:'✅',
+    учёба:'🎓',опыт:'⭐',игра:'🎮',мяч:'⚽',веселье:'🎉',команда:'👥',бассейн:'🏊',волна:'🌊',
+    небо:'☁️',крылья:'🕊️',облака:'⛅',машина:'🚗',трасса:'🛣️',водитель:'🧑‍✈️',ключ:'🔑',коробка:'📦',
+    замок:'🔒',конец:'🛑',тишина:'🤫',радость:'😄',смех:'😂',счастье:'🥰',дождь:'🌧️',зонт:'☂️',
+    тучи:'⛈️',лужи:'💦',зима:'❄️',снежинка:'❄️',холод:'🥶',сугроб:'⛄',луна:'🌕',звёзды:'✨',
+    темнота:'🌑',солнце:'☀️',дела:'📋',лес:'🌲',ветки:'🌿',корни:'🌱',лепестки:'🌸',букет:'💐',весна:'🌷'
+  };
 
+  const fall=['🎯','🔑','💡','📌','🧩','🔮','🌈','⚡','🎁','🧭'];
+  const userAsc=document.getElementById('c-asc').value.trim();
+  const defAsc=(ru.endsWith('ть')||ru.endsWith('ти'))?'действие, движение, процесс, результат':'признак, деталь, место, польза';
+  const asc=userAsc||dict[en]||defAsc;
+  document.getElementById('c-asc').value=asc;
+
+  const cols=['#2563eb','#059669','#d97706','#db2777'];
+  const ws=asc.split(',').map(s=>s.trim()).filter(s=>s&&s.toLowerCase()!==ru&&s.toLowerCase()!==en);
+  while(ws.length<4)ws.push('образ');
+
+  tmpImg=ws.slice(0,4).map((w,i)=>{
+    const ic=emo[w.toLowerCase()]||fall[(w.charCodeAt(0)+i)%fall.length];
+    return `BOX|${cols[i]}|${ic}|${w}`;
+  });
+
+  document.getElementById('c-prev').innerHTML=tmpImg.map(s=>{
+    const p=s.split('|');
+    return `<div style="background:${p.at(1)};border-radius:8px;height:65px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700"><span style="font-size:20px">${p.at(2)}</span>${p.at(3)}</div>`;
+  }).join('');
+}
 
 function saveCard(){const folder=document.getElementById('c-fld').value.trim()||'Мой набор',ru=document.getElementById('c-ru').value.trim(),en=document.getElementById('c-en').value.trim();if(!ru||!en)return alert('Заполните русское и английское слово!');if(!tmpImg.length)autoMagic();const assoc=document.getElementById('c-asc').value.split(',').map(s=>s.trim()).filter(Boolean);cards.push({folder,ru,en,assoc,images:tmpImg});localStorage.setItem('c_ok',JSON.stringify(cards));ui();renderFolders();openFld(folder);}
-
-
 function openFld(f){curFld=f;fList=cards.filter(x=>x.folder===f);wIdx=0;document.getElementById('f-title').textContent='📁 '+f;setPart('asc');tab('fld');}
 
  
