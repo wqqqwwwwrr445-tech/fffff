@@ -45,6 +45,9 @@ h1{font-size:23px;font-weight:800;margin-bottom:4px}.sub{color:var(--mut);font-s
 .tag{background:rgba(24,25,29,.88);padding:4px 10px;border-radius:10px;font-size:12px;font-weight:600}
 .acard,.gcard{background:var(--card);border-radius:22px;padding:18px;text-align:center;margin-bottom:12px}
 .acard img,.gimg{width:100%;height:190px;object-fit:cover;border-radius:14px;margin-bottom:12px}
+ .gvis{width:100%;height:160px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background:#2c303a}
+.gvis .collage div,.cbox{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;gap:4px;height:100%}
+.pthumb{width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .sbtn{flex:1;background:var(--card);color:var(--txt);border:1px solid rgba(255,255,255,.08);padding:12px;border-radius:12px;font-weight:700}
 .card{background:var(--card);padding:16px;border-radius:18px;margin-bottom:14px}
@@ -164,7 +167,44 @@ function toggleAud(){const b=document.getElementById('au-btn');if(audT)return st
 function stopAud(){if(audT){clearInterval(audT);audT=null;}if('speechSynthesis'in window)speechSynthesis.cancel();const b=document.getElementById('au-btn');if(b)b.textContent='▶ Запустить аудио-повтор';}
 function startGame(t){if(!cards.length)return alert('Создайте хотя бы одну карточку!');gType=t;const names={assoc:'🖼️ По ассоциациям',choice:'✅ Выбор перевода',pairs:'🔗 Соедини пары',pic:'📸 По картинке',ctx:'📝 Контекст',dict:'🎧 Аудио-диктант'};document.getElementById('g-title').textContent=Reflect.get(names,t);const fs=Array.from(new Set(cards.map(x=>x.folder)));document.getElementById('g-sel').innerHTML=`<option value="ALL">Все папки (${cards.length})</option>`+fs.map(f=>`<option value="${f}">${f}</option>`).join('');tab('game');runGame();}
 function runGame(){stopAud();const f=document.getElementById('g-sel').value;gPool=(f==='ALL'?Array.from(cards):cards.filter(x=>x.folder===f)).sort(()=>Math.random()-.5);gIdx=0;nextQ();}
-function nextQ(){const a=document.getElementById('g-area');if(!gPool.length)return a.innerHTML='<div class="gcard">Нет слов</div>';const x=gPool.at(gIdx%gPool.length);if(gType==='assoc'){a.innerHTML=`<div class="fbox" style="height:240px"><div class="collage">${x.images.map(s=>`<img src="${s}">`).join('')}</div><div class="fover" style="justify-content:flex-end"><div class="tags">${(x.assoc||new Array()).map(t=>`<span class="tag">#${t}</span>`).join('')}</div></div></div><div class="gcard"><p style="color:var(--mut);font-size:13px;margin-bottom:8px">Впишите слово на английском:</p><input type="text" id="ginp" placeholder="Ответ..."><button class="pbtn" onclick="chkTxt('${x.en.replace(/'/g,"\\'")}')">Проверить</button><div class="fb" id="gfb"></div></div>`;}else if(gType==='pic'){a.innerHTML=`<div class="gcard"><img class="gimg" src="${x.images.at(0)||''}"><p style="color:var(--mut);font-size:13px;margin-bottom:8px">Напишите слово на английском:</p><input type="text" id="ginp" placeholder="Ответ..."><button class="pbtn" onclick="chkTxt('${x.en.replace(/'/g,"\\'")}')">Проверить</button><div class="fb" id="gfb"></div></div>`;}else if(gType==='dict'){a.innerHTML=`<div class="gcard"><button class="mbtn" onclick="say('${x.en.replace(/'/g,"\\'")}')">🔊 Прослушать слово</button><input type="text" id="ginp" placeholder="Напишите услышанное..."><button class="pbtn" onclick="chkTxt('${x.en.replace(/'/g,"\\'")}')">Проверить</button><div class="fb" id="gfb"></div></div>`;setTimeout(()=>say(x.en),200);}else if(gType==='choice'){let ds=cards.filter(c=>c.ru!==x.ru).map(c=>c.ru);const fb=new Array('дом','машина','вода','город','друг');while(ds.length<3){const r=fb.at(Math.floor(Math.random()*fb.length));if(r!==x.ru&&!ds.includes(r))ds.push(r);}const opts=new Array(x.ru,...ds.slice(0,3)).sort(()=>Math.random()-.5);a.innerHTML=`<div class="gcard"><h2 style="font-size:28px;margin:10px 0">${x.en}</h2>${opts.map(o=>`<button class="opt" onclick="chkOpt(this,'${o.replace(/'/g,"\\'")}','${x.ru.replace(/'/g,"\\'")}')">${o}</button>`).join('')}<div class="fb" id="gfb"></div></div>`;}else if(gType==='pairs'){const sub=gPool.slice(0,4);pL=null;pR=null;mCnt=0;const lc=Array.from(sub).sort(()=>Math.random()-.5),rc=Array.from(sub).sort(()=>Math.random()-.5);a.innerHTML=`<div class="gcard"><p style="color:var(--mut);font-size:13px">Соедините слово и перевод:</p><div class="pgrid"><div class="pcol">${lc.map(w=>`<button class="pitem" data-k="${w.en}" onclick="pickP('l',this)">${w.en}</button>`).join('')}</div><div class="pcol">${rc.map(w=>`<button class="pitem" data-k="${w.en}" onclick="pickP('r',this)">${w.ru}</button>`).join('')}</div></div><div class="fb" id="gfb"></div></div>`;}else if(gType==='ctx'){a.innerHTML=`<div class="gcard"><p style="font-size:17px;font-weight:700;margin:10px 0">«I use the word ____ (${x.ru}) every day.»</p><input type="text" id="ginp" placeholder="Вставьте слово..."><button class="pbtn" onclick="chkTxt('${x.en.replace(/'/g,"\\'")}')">Проверить</button><div class="fb" id="gfb"></div></div>`;}}
+function visHTML(x){
+  const list=(x.images||[]).filter(s=>s&&s!=='https://loremflickr.com');
+  if(!list.length)return `<div class="cbox" style="background:#2563eb"><span style="font-size:32px">🖼️</span>${x.ru}</div>`;
+  return list.map(s=>{
+    if(s.startsWith('BOX|')){
+      const p=s.split('|');
+      return `<div class="cbox" style="background:${p.at(1)}"><span style="font-size:32px">${p.at(2)}</span>${p.at(3)}</div>`;
+    }
+    return `<img src="${s}">`;
+  }).join('');
+}
+
+function nextQ(){
+  const a=document.getElementById('g-area');
+  if(!gPool.length)return a.innerHTML='<div class="gcard">Нет слов</div>';
+  const x=gPool.at(gIdx%gPool.length),esc=x.en.replace(/'/g,"\\'");
+  const box=`<div class="gvis"><div class="collage">${visHTML(x)}</div></div>`;
+
+  if(gType==='assoc'){
+    a.innerHTML=`<div class="fbox" style="height:240px"><div class="collage">${visHTML(x)}</div><div class="fover" style="justify-content:flex-end"><div class="tags">${(x.assoc||[]).map(t=>`<span class="tag">#${t}</span>`).join('')}</div></div></div><div class="gcard"><p style="color:var(--mut);font-size:13px;margin-bottom:8px">Впишите слово на английском:</p><input type="text" id="ginp" placeholder="Ответ..."><button class="pbtn" onclick="chkTxt('${esc}')">Проверить</button><div class="fb" id="gfb"></div></div>`;
+  }else if(gType==='pic'){
+    a.innerHTML=`<div class="gcard">${box}<p style="color:var(--mut);font-size:13px;margin-bottom:8px">Напишите слово на английском:</p><input type="text" id="ginp" placeholder="Ответ..."><button class="pbtn" onclick="chkTxt('${esc}')">Проверить</button><div class="fb" id="gfb"></div></div>`;
+  }else if(gType==='dict'){
+    a.innerHTML=`<div class="gcard">${box}<button class="mbtn" onclick="say('${esc}')">🔊 Прослушать слово</button><input type="text" id="ginp" placeholder="Напишите услышанное..."><button class="pbtn" onclick="chkTxt('${esc}')">Проверить</button><div class="fb" id="gfb"></div></div>`;
+  }else if(gType==='choice'){
+    const others=cards.filter(c=>c.en!==x.en).sort(()=>Math.random()-.5).slice(0,3).map(c=>c.en);
+    const opts=[x.en,...others].sort(()=>Math.random()-.5);
+    a.innerHTML=`<div class="gcard">${box}<p style="color:var(--mut);font-size:12px;margin-bottom:4px">Выберите перевод:</p><h2 style="font-size:24px;margin-bottom:10px">${x.ru}</h2>${opts.map(o=>`<button class="opt" onclick="chkOpt(this,'${o.replace(/'/g,"\\'")}','${esc}')">${o}</button>`).join('')}<div class="fb" id="gfb"></div></div>`;
+  }else if(gType==='ctx'){
+    a.innerHTML=`<div class="gcard">${box}<p style="color:var(--mut);font-size:12px;margin-bottom:6px">Вставьте слово в фразу:</p><h3 style="font-size:18px;margin-bottom:12px">I see a _____ (${x.ru})</h3><input type="text" id="ginp" placeholder="Ответ..."><button class="pbtn" onclick="chkTxt('${esc}')">Проверить</button><div class="fb" id="gfb"></div></div>`;
+  }else if(gType==='pairs'){
+    const batch=gPool.slice(0,4),left=[...batch].sort(()=>Math.random()-.5),right=[...batch].sort(()=>Math.random()-.5);
+    pL=null;pR=null;mCnt=0;
+    const th=c=>{const s=(c.images||[]).at(0)||'';if(s.startsWith('BOX|')){const p=s.split('|');return `<span class="pthumb" style="background:${p.at(1)}">${p.at(2)}</span>`;}return s&&s!=='https://loremflickr.com'?`<img class="pthumb" src="${s}">`:'';};
+    a.innerHTML=`<div class="gcard"><p style="color:var(--mut);font-size:13px">Соедините пары:</p><div class="pgrid"><div class="pcol">${left.map(c=>`<button class="pitem" style="display:flex;align-items:center;gap:8px" data-v="${c.en}" onclick="pickP('l',this)">${th(c)}<span>${c.ru}</span></button>`).join('')}</div><div class="pcol">${right.map(c=>`<button class="pitem" data-v="${c.en}" onclick="pickP('r',this)">${c.en}</button>`).join('')}</div></div><div class="fb" id="gfb"></div></div>`;
+  }
+}
+
 function chkTxt(ans){const v=document.getElementById('ginp').value.trim().toLowerCase(),fb=document.getElementById('gfb');if(!v)return;if(v===ans.toLowerCase()){fb.style.color='var(--ok)';fb.textContent='✅ Верно!';rec(true);setTimeout(()=>{gIdx++;nextQ();},1000);}else{fb.style.color='var(--err)';fb.textContent='❌ Правильно: '+ans;rec(false);setTimeout(()=>{gIdx++;nextQ();},1600);}}
 function chkOpt(b,p,c){document.querySelectorAll('.opt').forEach(x=>x.disabled=true);const fb=document.getElementById('gfb');if(p===c){b.classList.add('ok');fb.style.color='var(--ok)';fb.textContent='✅ Верно!';rec(true);}else{b.classList.add('err');fb.style.color='var(--err)';fb.textContent='❌ Ответ: '+c;rec(false);}setTimeout(()=>{gIdx++;nextQ();},1100);}
 function pickP(s,b){if(s==='l'){if(pL)pL.classList.remove('sel');pL=b;b.classList.add('sel');}else{if(pR)pR.classList.remove('sel');pR=b;b.classList.add('sel');}if(pL&&pR){const fb=document.getElementById('gfb');if(pL.dataset.k===pR.dataset.k){pL.className='pitem done';pR.className='pitem done';pL=null;pR=null;mCnt++;rec(true);if(mCnt>=Math.min(4,gPool.length)){fb.style.color='var(--ok)';fb.textContent='🎉 Готово!';setTimeout(runGame,1000);}}else{fb.style.color='var(--err)';fb.textContent='❌ Не совпало';rec(false);const a=pL,c=pR;pL=null;pR=null;setTimeout(()=>{a.classList.remove('sel');c.classList.remove('sel');fb.textContent='';},500);}}}
